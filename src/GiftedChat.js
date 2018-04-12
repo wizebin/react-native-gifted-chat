@@ -46,7 +46,6 @@ class GiftedChat extends React.Component {
 
     // default values
     this._isMounted = false;
-    this._keyboardHeight = 0;
     this._bottomOffset = 0;
     this._maxHeight = null;
     this._isFirstLayout = true;
@@ -60,10 +59,6 @@ class GiftedChat extends React.Component {
       typingDisabled: false,
     };
 
-    this.onKeyboardWillShow = this.onKeyboardWillShow.bind(this);
-    this.onKeyboardWillHide = this.onKeyboardWillHide.bind(this);
-    this.onKeyboardDidShow = this.onKeyboardDidShow.bind(this);
-    this.onKeyboardDidHide = this.onKeyboardDidHide.bind(this);
     this.onSend = this.onSend.bind(this);
     this.getLocale = this.getLocale.bind(this);
     this.onInputSizeChanged = this.onInputSizeChanged.bind(this);
@@ -166,21 +161,6 @@ class GiftedChat extends React.Component {
     return this._maxHeight;
   }
 
-  setKeyboardHeight(height) {
-    this._keyboardHeight = height;
-  }
-
-  getKeyboardHeight() {
-    if (Platform.OS === 'android' && !this.props.forceGetKeyboardHeight) {
-      // For android: on-screen keyboard resized main container and has own height.
-      // @see https://developer.android.com/training/keyboard-input/visibility.html
-      // So for calculate the messages container height ignore keyboard height.
-      return 0;
-    }
-    return this._keyboardHeight;
-  }
-
-
   setBottomOffset(value) {
     this._bottomOffset = value;
   }
@@ -236,7 +216,7 @@ class GiftedChat extends React.Component {
    * Returns the height, based on current window size, taking the keyboard into account.
    */
   getMessagesContainerHeightWithKeyboard(composerHeight = this.state.composerHeight) {
-    return this.getBasicMessagesContainerHeight(composerHeight) - this.getKeyboardHeight() + this.getBottomOffset();
+    return this.getBasicMessagesContainerHeight(composerHeight) + this.getBottomOffset();
   }
 
   prepareMessagesContainerHeight(value) {
@@ -246,61 +226,12 @@ class GiftedChat extends React.Component {
     return value;
   }
 
-  onKeyboardWillShow(e) {
-    this.setIsTypingDisabled(true);
-    this.setKeyboardHeight(e.endCoordinates ? e.endCoordinates.height : e.end.height);
-    this.setBottomOffset(this.props.bottomOffset);
-    const newMessagesContainerHeight = this.getMessagesContainerHeightWithKeyboard();
-    if (this.props.isAnimated === true) {
-      Animated.timing(this.state.messagesContainerHeight, {
-        toValue: newMessagesContainerHeight,
-        duration: 210,
-      }).start();
-    } else {
-      this.setState({
-        messagesContainerHeight: newMessagesContainerHeight,
-      });
-    }
-  }
-
-  onKeyboardWillHide() {
-    this.setIsTypingDisabled(true);
-    this.setKeyboardHeight(0);
-    this.setBottomOffset(0);
-    const newMessagesContainerHeight = this.getBasicMessagesContainerHeight();
-    if (this.props.isAnimated === true) {
-      Animated.timing(this.state.messagesContainerHeight, {
-        toValue: newMessagesContainerHeight,
-        duration: 210,
-      }).start();
-    } else {
-      this.setState({
-        messagesContainerHeight: newMessagesContainerHeight,
-      });
-    }
-  }
-
-  onKeyboardDidShow(e) {
-    if (Platform.OS === 'android') {
-      this.onKeyboardWillShow(e);
-    }
-    this.setIsTypingDisabled(false);
-  }
-
-  onKeyboardDidHide(e) {
-    if (Platform.OS === 'android') {
-      this.onKeyboardWillHide(e);
-    }
-    this.setIsTypingDisabled(false);
-  }
-
   scrollToBottom(animated = true) {
     if (this._messageContainerRef === null) {
       return;
     }
     this._messageContainerRef.scrollTo({ y: 0, animated });
   }
-
 
   renderMessages() {
     const AnimatedView = this.props.isAnimated === true ? Animated.View : View;

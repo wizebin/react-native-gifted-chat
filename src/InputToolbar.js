@@ -13,35 +13,6 @@ export default class InputToolbar extends React.Component {
 
   constructor(props) {
     super(props);
-
-    this.keyboardWillShow = this.keyboardWillShow.bind(this);
-    this.keyboardWillHide = this.keyboardWillHide.bind(this);
-
-    this.state = {
-      position: 'absolute',
-    };
-  }
-
-  componentWillMount() {
-    this.keyboardWillShowListener = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
-    this.keyboardWillHideListener = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
-  }
-
-  componentWillUnmount() {
-    this.keyboardWillShowListener.remove();
-    this.keyboardWillHideListener.remove();
-  }
-
-  keyboardWillShow() {
-    this.setState({
-      position: 'relative',
-    });
-  }
-
-  keyboardWillHide() {
-    this.setState({
-      position: 'absolute',
-    });
   }
 
   renderActions() {
@@ -82,7 +53,7 @@ export default class InputToolbar extends React.Component {
   render() {
     return (
       <View
-        style={[styles.container, this.props.containerStyle, { position: this.state.position }]}
+        style={[styles.container, this.props.containerStyle]}
       >
         <View style={[styles.primary, this.props.primaryStyle]}>
           {this.renderActions()}
@@ -104,6 +75,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    position: 'absolute',
   },
   primary: {
     flexDirection: 'row',
